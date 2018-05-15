@@ -31,8 +31,6 @@ def find_answers(quizID):
                 else:
                     answer.append(question["structure"]["options"][int(answerC)]["text"])
         questionID = question["structure"]["query"]["text"]
-        if questionID.endswith("&nbsp;"):
-            questionID = questionID[:-6]
         answers[questionID.replace("&nbsp;"," ").rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
 def play(gamecode, name):
