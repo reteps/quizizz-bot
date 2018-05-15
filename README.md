@@ -10,3 +10,7 @@ Find your gameID by opening up inspect element, going to the Application tab, go
 + python3
 + selenium
 + chromedriver
+
+### Recently Fixed
+
++ `&nbsp;` bug

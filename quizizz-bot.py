@@ -1,12 +1,18 @@
+#!/usr/bin/env python3
 from selenium import webdriver
 import time, json, requests, sys
-import helper
-from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
+#-------------------------------------------------------------------------#
+def waitForItem(driver, css, timeout=10):
+    WebDriverWait(driver, timeout).until(expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css)))
 def find_answers(quizID):
     quizInfo = requests.get(f"https://quizizz.com/quiz/{quizID}/").json()
     answers = {}
     if "error" in quizInfo:
-        print("I couldn't find that quiz")
+        print("[error] I couldn't find that quiz")
         exit()
 
     for question in quizInfo["data"]["quiz"]["info"]["questions"]:
@@ -25,17 +31,18 @@ def find_answers(quizID):
                 else:
                     answer.append(question["structure"]["options"][int(answerC)]["text"])
         questionID = question["structure"]["query"]["text"]
-        answers[questionID] = answer
-
+        if questionID.endswith("&nbsp;"):
+            questionID = questionID[:-6]
+        answers[questionID.lower()] = answer.replace("&nbsp;","").rstrip().lower()
     return answers
 def play(gamecode, name):
     driver = webdriver.Chrome()
     driver.get("https://quizizz.com/join/")
     print("[info] starting game")
-    helper.waitForItem(driver,'.check-room-input')
+    waitForItem(driver,'.check-room-input')
     driver.find_element_by_css_selector('.check-room-input').send_keys(gamecode)
     driver.find_element_by_css_selector('.check-room-btn').click()
-    helper.waitForItem(driver,'.check-player-input')
+    waitForItem(driver,'.check-player-input')
     driver.find_element_by_css_selector('.check-player-input').send_keys(name)
     driver.find_element_by_css_selector('.left-section').find_element_by_css_selector('.menu-icon').click()
     time.sleep(0.4)
@@ -47,28 +54,32 @@ def play(gamecode, name):
     print("[info] answers found")
     while True:
         try:
-            helper.WaitForItem(driver,'.question-text-color',timeout=15)
+            waitForItem(driver,'.question-text-color',timeout=15)
         except TimeoutException:
             driver.quit()
             break
         try:
-            questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML')]
             choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
             firstAnswer = True
             for answer in choices:
                 try:
                     if isinstance(questionAnswer, list):
+                        # multiple select
                         if firstAnswer:
                             time.sleep(0.2)
                             firstAnswer = False
-                        if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML') in questionAnswer:
+                        if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
+                            print("should of clicked")
                             answer.click()
-                    elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML') == questionAnswer:
+                            break
+                    elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
                         answer.click()
                         break
                 except NoSuchElementException:
-                    style = answer.find_element_by_css_selector(".option-image").get_attribute("style")
+                    # Is an image
+                    style = answer.find_element_by_css_selector(".option-image").get_attribute("style").lower()
                     if isinstance(questionAnswer, list):
+                        # multiple select
                         for correctAnswer in questionAnswer:
                             if style in correctAnswer:
                                 answer.click()
@@ -89,7 +100,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == "INFO":
         answers = find_answers(input("gameID >>> "))
         for key in answers:
-            print("{} - {}".format(key, answers[key]))
+            print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
     elif sys.argv[1] == "PLAY":
         play(input("PIN >>> "), input("username >>> "))
     else:
