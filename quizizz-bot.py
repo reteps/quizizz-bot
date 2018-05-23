@@ -31,7 +31,8 @@ def find_answers(quizID):
                 else:
                     answer.append(question["structure"]["options"][int(answerC)]["text"])
         questionID = question["structure"]["query"]["text"]
-        answers[questionID.replace("&nbsp;"," ").rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
+        answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
+    print(answers)
     return answers
 def play(gamecode, name):
     driver = webdriver.Chrome()
@@ -57,7 +58,7 @@ def play(gamecode, name):
             driver.quit()
             break
         try:
-            questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower()]
+            questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower().replace("&nbsp;"," ")]
             choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
             firstAnswer = True
             for answer in choices:
@@ -91,7 +92,11 @@ def play(gamecode, name):
             print(driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower())
             for answer in driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option'):
                 print(answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower())
-            input("[error] I couldn't get the answer. Please click it then hit [enter]")
+            try:
+                print(answers[input("Manual search for answer - question >>> ").lower()])
+                input("Click the answer please then hit [enter]")
+            except KeyError:
+                input("Manual search failed. Try clicking the correct answer then hit [enter]")
     driver.quit()
 
 if __name__ == '__main__':
