@@ -32,7 +32,6 @@ def find_answers(quizID):
                     answer.append(question["structure"]["options"][int(answerC)]["text"])
         questionID = question["structure"]["query"]["text"]
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
-    print(answers)
     return answers
 def play(gamecode, name):
     driver = webdriver.Chrome()
