@@ -108,6 +108,6 @@ if __name__ == '__main__':
             print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
     elif sys.argv[1] == "PLAY":
         play(input("Game PIN >>> "), input("Username >>> "))
-        //we should ask for quizID here instead of up there
+        #we should ask for quizID here instead of up there
     else:
         print(USAGE)
