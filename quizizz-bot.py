@@ -48,7 +48,7 @@ def play(gamecode, name):
     time.sleep(1)
     driver.find_element_by_css_selector('.game-start-btn').click()
     time.sleep(5)
-    answers = find_answers(input("QuizID > "))
+    answers = find_answers(input("QuizID >>> "))
     print("[info] answers found")
     while True:
         try:
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         for key in answers:
             print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
     elif sys.argv[1] == "PLAY":
-        play(input("PIN >>> "), input("username >>> "))
+        play(input("Game PIN >>> "), input("Username >>> "))
         //we should ask for quizID here instead of up there
     else:
         print(USAGE)
