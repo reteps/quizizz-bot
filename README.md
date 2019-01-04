@@ -1,16 +1,13 @@
-# quizizz-bot
+# Quizizz-bot
 
-quizizz bot!
+Quizizz bot that automaticly answers your Quizizz.com questions.
 
-Find your gameID by opening up inspect element, going to the Application tab, going to localStorage > quizizz.com > previousContext > rawData > game > gameID. Copy this when it asks for it.
-
-
-### dependencies
+### Dependencies
 
 + python3
 + selenium
 + chromedriver
 
 ### Recently Fixed
-
++ timimgs and moved input for quizid
 + `&nbsp;` bug
