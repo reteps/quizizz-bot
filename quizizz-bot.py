@@ -33,7 +33,7 @@ def find_answers(quizID):
         questionID = question["structure"]["query"]["text"]
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
-def play(gamecode, name):
+def play(gamecode, name, IDb4):
     driver = webdriver.Chrome()
     driver.get("https://quizizz.com/join/")
     print("[info] starting game")
@@ -47,8 +47,8 @@ def play(gamecode, name):
     driver.find_element_by_css_selector('.skip-btn').click()
     time.sleep(1)
     driver.find_element_by_css_selector('.game-start-btn').click()
-    time.sleep(5)
-    answers = find_answers(input("QuizID >>> "))
+    time.sleep(2)
+    answers = find_answers(IDb4)
     print("[info] answers found")
     while True:
         try:
@@ -64,13 +64,12 @@ def play(gamecode, name):
                 try:
                     if isinstance(questionAnswer, list):
                         # multiple select
-                        if firstAnswer:
-                            time.sleep(1)
-                            firstAnswer = False
                         if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
+                            time.sleep(3)
                             answer.click()
                             break
                     elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
+                        time.sleep(3)
                         answer.click()
                         break
                 except NoSuchElementException:
@@ -107,7 +106,6 @@ if __name__ == '__main__':
         for key in answers:
             print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
     elif sys.argv[1] == "PLAY":
-        play(input("Game PIN >>> "), input("Username >>> "))
-        #we should ask for quizID here instead of up there
+        play(input("Game PIN >>> "), input("Username >>> "),input("Quiz ID >>>"))
     else:
         print(USAGE)
