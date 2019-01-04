@@ -45,9 +45,9 @@ def play(gamecode, name):
     driver.find_element_by_css_selector('.proceed-button').click()
     time.sleep(4)
     driver.find_element_by_css_selector('.skip-btn').click()
-    time.sleep(2)
+    time.sleep(1)
     driver.find_element_by_css_selector('.game-start-btn').click()
-    time.sleep(0.4)
+    time.sleep(5)
     answers = find_answers(input("QuizID > "))
     print("[info] answers found")
     while True:
@@ -65,7 +65,7 @@ def play(gamecode, name):
                     if isinstance(questionAnswer, list):
                         # multiple select
                         if firstAnswer:
-                            time.sleep(0.2)
+                            time.sleep(1)
                             firstAnswer = False
                         if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
                             answer.click()
