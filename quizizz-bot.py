@@ -33,7 +33,7 @@ def find_answers(quizID):
         questionID = question["structure"]["query"]["text"]
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
-def play(gamecode, name):
+def play(gamecode, name, short_delay=0.2, delay=0.4, long_delay=1):
     driver = webdriver.Chrome()
     driver.get("https://quizizz.com/join/")
     print("[info] starting game")
@@ -43,11 +43,11 @@ def play(gamecode, name):
     waitForItem(driver,'.check-player-input')
     driver.find_element_by_css_selector('.check-player-input').send_keys(name)
     driver.find_element_by_css_selector('.proceed-button').click()
-    time.sleep(4)
+    time.sleep(long_delay)
     driver.find_element_by_css_selector('.skip-btn').click()
-    time.sleep(2)
+    time.sleep(delay)
     driver.find_element_by_css_selector('.game-start-btn').click()
-    time.sleep(0.4)
+    time.sleep(delay)
     answers = find_answers(input("QuizID > "))
     print("[info] answers found")
     while True:
@@ -65,7 +65,7 @@ def play(gamecode, name):
                     if isinstance(questionAnswer, list):
                         # multiple select
                         if firstAnswer:
-                            time.sleep(0.2)
+                            time.sleep(short_delay)
                             firstAnswer = False
                         if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
                             answer.click()

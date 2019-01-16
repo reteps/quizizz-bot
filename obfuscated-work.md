@@ -1,7 +1,3 @@
-# de-obfuscating this file
+### Notes on javascript file
 
-## objective: un-hash quizID
-
-## progress
-previousContext saved to localStorage on line 6920
-48420
++ previousContext saved to localStorage on line 6920
