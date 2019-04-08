@@ -20,3 +20,6 @@ Note:
 + `&nbsp;` bug
 + modifiable timings
 + QuizID Obfuscation(it was quick so ur welcome to improve)
+
+### Mentions
+Original code from https://github.com/reteps/quizizz-bot. I only added auto get QuizID + GUI!!!
