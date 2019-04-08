@@ -13,47 +13,6 @@ def waitForItem(driver, css, timeout=20):
 def randomword(length):
    letters = string.ascii_lowercase
    return ''.join(random.choice(letters) for i in range(length))
-	
-def get_GameID(gamecode):
-	print("RETRIVING QuizID PLEASE BE PATIENT")
-	time.sleep(1)
-	
-	pin = gamecode
-	username = randomword(8)
-
-	# enable browser logging
-	d = DesiredCapabilities.CHROME
-	d['loggingPrefs'] = { 'performance':'ALL' }
-	driver = webdriver.Chrome(desired_capabilities=d)
-
-	# load webpage
-	driver = webdriver.Chrome()
-	driver.get("https://quizizz.com/join/")
-	waitForItem(driver,'.check-room-input')
-	driver.find_element_by_css_selector('.check-room-input').send_keys(pin)
-	driver.find_element_by_css_selector('.proceed-button').click()
-	waitForItem(driver,'.check-player-input')
-	driver.find_element_by_css_selector('.check-player-input').send_keys(username)
-	driver.find_element_by_css_selector('.proceed-button').click()
-	time.sleep(5)
-
-	#find GameID
-	with open('logs.txt', 'a') as f:
-		for entry in driver.get_log('performance'):
-			try:
-				f.write(str(entry) + '\n')
-			except Exception:
-				pass
-	with open('logs.txt', 'r') as inF:
-		for line in inF:
-			if 'recommend?quizId=' in line:
-				s = line.split("recommend?quizId=",1)[1]
-				final = s.split('"')[0]
-				print("found:" + final)
-				break
-	driver.close()
-	os.remove("logs.txt")
-	return final	
 
 def find_answers(quizID):
     quizInfo = requests.get(f"https://quizizz.com/quiz/{quizID}/").json()
@@ -80,9 +39,14 @@ def find_answers(quizID):
         questionID = question["structure"]["query"]["text"]
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
+
 def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
-	GameID = get_GameID(gamecode)
-	driver = webdriver.Chrome()
+	
+	# enable browser logging
+	d = DesiredCapabilities.CHROME
+	d['loggingPrefs'] = { 'performance':'ALL' }
+	driver = webdriver.Chrome(desired_capabilities=d)
+	
 	driver.get("https://quizizz.com/join/")
 	print("[info] starting game")
 	waitForItem(driver,'.check-room-input')
@@ -91,7 +55,27 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 	waitForItem(driver,'.check-player-input')
 	driver.find_element_by_css_selector('.check-player-input').send_keys(name)
 	driver.find_element_by_css_selector('.proceed-button').click()
-	time.sleep(5)
+	time.sleep(2)
+	
+	#find GameID
+	print("RETRIVING QuizID PLEASE BE PATIENT")
+	with open('logs.txt', 'a') as f:
+		for entry in driver.get_log('performance'):
+			try:
+				f.write(str(entry) + '\n')
+			except Exception:
+				pass
+	with open('logs.txt', 'r') as inF:
+		for line in inF:
+			if 'recommend?quizId=' in line:
+				s = line.split("recommend?quizId=",1)[1]
+				GameID = s.split('"')[0]
+				print("found:" + GameID)
+				break
+	os.remove("logs.txt")
+	
+	#Continue play
+	time.sleep(3)
 	driver.find_element_by_css_selector('.skip-btn').click()
 	time.sleep(2)
 	driver.find_element_by_css_selector('.game-start-btn').click()
@@ -151,8 +135,8 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 				input("Manual search failed. Try clicking the correct answer then hit [enter]")
 	driver.quit()
 
-	
-"""if __name__ == '__main__':
+#CMD	
+if __name__ == '__main__':
     USAGE = "quizizz-bot (INFO|PLAY)"
     if len(sys.argv) == 1:
        print(USAGE) 
@@ -163,8 +147,10 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
     elif sys.argv[1] == "PLAY":
         play(input("PIN >>> "), input("username >>> ")) 
     else:
-        print(USAGE)"""
-if __name__ == "__main__":
+        print(USAGE)
+
+#GUI(WIP)
+"""if __name__ == "__main__":
 	window = tkinter.Tk()
 	window.title("Quizizz Bot")
 	window.geometry("400x200")
@@ -190,5 +176,4 @@ if __name__ == "__main__":
 		# 'Checkbutton' is used to create the check buttons
 	button = tkinter.Button(window, text = "Start", fg = "green", command=buttonClick).pack(fill="both", expand=True) # 'columnspan' tells to take the width of 2 columns
 																				 # you can also use 'rowspan' in the similar manner
-	window.mainloop()
-
+	window.mainloop()"""
