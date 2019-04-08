@@ -2,7 +2,12 @@
 
 quizizz bot!
 
-1/4/18 - Quizizz has hashed most game data now using an obfusucated JS file. This is done through the obfuscate and deobfuscate methods. I am working on decryption techniques for these.
+4/8/19 - It is still buggy. If it doesn't work, try running it again or look at the error
+
+Note: 
+    -Will not work if u have to sign in (ur welcome to add this)
+    -It opens a total of 3 windows, 1st is bug, 2nd is for getting QuizID, 3rd is when it will play
+    -It is not perfect, watch the terminal to see if it could not find the ans(it will get most of them)
 
 ### dependencies
 
@@ -14,3 +19,4 @@ quizizz bot!
 
 + `&nbsp;` bug
 + modifiable timings
++ QuizID Obfuscation(it was quick so ur welcome to improve)
