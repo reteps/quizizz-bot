@@ -6,7 +6,6 @@ quizizz bot!
 
 Note: 
     -Will not work if u have to sign in (ur welcome to add this)
-    -It opens a total of 3 windows, 1st is bug, 2nd is for getting QuizID, 3rd is when it will play
     -It is not perfect, watch the terminal to see if it could not find the ans(it will get most of them)
 
 ### dependencies
@@ -20,6 +19,7 @@ Note:
 + `&nbsp;` bug
 + modifiable timings
 + QuizID Obfuscation(it was quick so ur welcome to improve)
++ Extra Windows
 
 ### Mentions
 Original code from https://github.com/reteps/quizizz-bot. I only added auto get QuizID + GUI!!!
