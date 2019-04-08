@@ -1,13 +1,60 @@
 #!/usr/bin/env python3
+import os, time, json, requests, sys, random, string, tkinter, subprocess, tempfile
 from selenium import webdriver
-import time, json, requests, sys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 #-------------------------------------------------------------------------#
-def waitForItem(driver, css, timeout=10):
+def waitForItem(driver, css, timeout=20):
     WebDriverWait(driver, timeout).until(expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css)))
+
+def randomword(length):
+   letters = string.ascii_lowercase
+   return ''.join(random.choice(letters) for i in range(length))
+	
+def get_GameID(gamecode):
+	print("RETRIVING QuizID PLEASE BE PATIENT")
+	time.sleep(1)
+	
+	pin = gamecode
+	username = randomword(8)
+
+	# enable browser logging
+	d = DesiredCapabilities.CHROME
+	d['loggingPrefs'] = { 'performance':'ALL' }
+	driver = webdriver.Chrome(desired_capabilities=d)
+
+	# load webpage
+	driver = webdriver.Chrome()
+	driver.get("https://quizizz.com/join/")
+	waitForItem(driver,'.check-room-input')
+	driver.find_element_by_css_selector('.check-room-input').send_keys(pin)
+	driver.find_element_by_css_selector('.proceed-button').click()
+	waitForItem(driver,'.check-player-input')
+	driver.find_element_by_css_selector('.check-player-input').send_keys(username)
+	driver.find_element_by_css_selector('.proceed-button').click()
+	time.sleep(5)
+
+	#find GameID
+	with open('logs.txt', 'a') as f:
+		for entry in driver.get_log('performance'):
+			try:
+				f.write(str(entry) + '\n')
+			except Exception:
+				pass
+	with open('logs.txt', 'r') as inF:
+		for line in inF:
+			if 'recommend?quizId=' in line:
+				s = line.split("recommend?quizId=",1)[1]
+				final = s.split('"')[0]
+				print("found:" + final)
+				break
+	driver.close()
+	os.remove("logs.txt")
+	return final	
+
 def find_answers(quizID):
     quizInfo = requests.get(f"https://quizizz.com/quiz/{quizID}/").json()
     answers = {}
@@ -33,72 +80,79 @@ def find_answers(quizID):
         questionID = question["structure"]["query"]["text"]
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
-def play(gamecode, name, short_delay=0.2, delay=0.4, long_delay=1):
-    driver = webdriver.Chrome()
-    driver.get("https://quizizz.com/join/")
-    print("[info] starting game")
-    waitForItem(driver,'.check-room-input')
-    driver.find_element_by_css_selector('.check-room-input').send_keys(gamecode)
-    driver.find_element_by_css_selector('.proceed-button').click()
-    waitForItem(driver,'.check-player-input')
-    driver.find_element_by_css_selector('.check-player-input').send_keys(name)
-    driver.find_element_by_css_selector('.proceed-button').click()
-    time.sleep(long_delay)
-    driver.find_element_by_css_selector('.skip-btn').click()
-    time.sleep(delay)
-    driver.find_element_by_css_selector('.game-start-btn').click()
-    time.sleep(delay)
-    answers = find_answers(input("QuizID > "))
-    print("[info] answers found")
-    while True:
-        try:
-            waitForItem(driver,'.question-text-color',timeout=15)
-        except TimeoutException:
-            driver.quit()
-            break
-        try:
-            questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower().replace("&nbsp;"," ")]
-            choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
-            firstAnswer = True
-            for answer in choices:
-                try:
-                    if isinstance(questionAnswer, list):
+def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
+	GameID = get_GameID(gamecode)
+	driver = webdriver.Chrome()
+	driver.get("https://quizizz.com/join/")
+	print("[info] starting game")
+	waitForItem(driver,'.check-room-input')
+	driver.find_element_by_css_selector('.check-room-input').send_keys(gamecode)
+	driver.find_element_by_css_selector('.proceed-button').click()
+	waitForItem(driver,'.check-player-input')
+	driver.find_element_by_css_selector('.check-player-input').send_keys(name)
+	driver.find_element_by_css_selector('.proceed-button').click()
+	time.sleep(5)
+	driver.find_element_by_css_selector('.skip-btn').click()
+	time.sleep(2)
+	driver.find_element_by_css_selector('.game-start-btn').click()
+	time.sleep(1)
+	answers = find_answers(GameID)
+	print("[info] answers found")
+	while True:
+		try:
+			waitForItem(driver,'.question-text-color',timeout=20)
+		except TimeoutException:
+			driver.quit()
+			break
+		try:
+			time.sleep(7);
+			questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower().replace("&nbsp;"," ")]
+			choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
+			firstAnswer = True
+			for answer in choices:
+				try:
+					if isinstance(questionAnswer, list):
                         # multiple select
-                        if firstAnswer:
-                            time.sleep(short_delay)
-                            firstAnswer = False
-                        if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
-                            answer.click()
-                            break
-                    elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
-                        answer.click()
-                        break
-                except NoSuchElementException:
-                    # Is an image
-                    style = answer.find_element_by_css_selector(".option-image").get_attribute("style").lower()
-                    if isinstance(questionAnswer, list):
+						if firstAnswer:
+							time.sleep(short_delay)
+							firstAnswer = False
+						if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
+							answer.click()
+							time.sleep(5);
+							break
+					elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
+						answer.click()
+						time.sleep(5);
+						break
+				except NoSuchElementException:
+					# Is an image
+					style = answer.find_element_by_css_selector(".option-image").get_attribute("style").lower()
+					if isinstance(questionAnswer, list):
                         # multiple select
-                        for correctAnswer in questionAnswer:
-                            if style in correctAnswer:
-                                answer.click()
-                                break
-                    elif questionAnswer in style:
-                        answer.click()
-                        break
-            if isinstance(questionAnswer, list):
-                driver.find_element_by_css_selector(".multiselect-submit-btn").click()
-        except KeyError:
-            print(driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower())
-            for answer in driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option'):
-                print(answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower())
-            try:
-                print(answers[input("Manual search for answer - question >>> ").lower()])
-                input("Click the answer please then hit [enter]")
-            except KeyError:
-                input("Manual search failed. Try clicking the correct answer then hit [enter]")
-    driver.quit()
+						for correctAnswer in questionAnswer:
+							if style in correctAnswer:
+								answer.click()
+								time.sleep(5);
+								break
+					elif questionAnswer in style:
+						answer.click()
+						time.sleep(5);
+						break
+			if isinstance(questionAnswer, list):
+				driver.find_element_by_css_selector(".multiselect-submit-btn").click()
+		except KeyError:
+			print(driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower())
+			for answer in driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option'):
+				print(answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower())
+			try:
+				print(answers[input("Manual search for answer - question >>> ").lower()])
+				input("Click the answer please then hit [enter]")
+			except KeyError:
+				input("Manual search failed. Try clicking the correct answer then hit [enter]")
+	driver.quit()
 
-if __name__ == '__main__':
+	
+"""if __name__ == '__main__':
     USAGE = "quizizz-bot (INFO|PLAY)"
     if len(sys.argv) == 1:
        print(USAGE) 
@@ -107,6 +161,34 @@ if __name__ == '__main__':
         for key in answers:
             print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
     elif sys.argv[1] == "PLAY":
-        play(input("PIN >>> "), input("username >>> "))
+        play(input("PIN >>> "), input("username >>> ")) 
     else:
-        print(USAGE)
+        print(USAGE)"""
+if __name__ == "__main__":
+	window = tkinter.Tk()
+	window.title("Quizizz Bot")
+	window.geometry("400x200")
+	window.resizable(0, 0)
+	
+	pin = tkinter.StringVar()
+	username = tkinter.StringVar()
+	pin.set("")
+	username.set("")
+	
+	# creating 2 text labels and input labels
+
+	tkinter.Label(window, text = "Pin:").pack(fill="both", expand=True) # this is placed in 0 0
+	# 'Entry' is used to display the input-field
+	pinField = tkinter.Entry(window, textvariable=pin).pack(fill="both", expand=True) # this is placed in 0 1
+
+	tkinter.Label(window, text = "Username:").pack(fill="both", expand=True) # this is placed in 1 0
+	usrNameField = tkinter.Entry(window, textvariable=username).pack(fill="both", expand=True) # this is placed in 1 1
+	def buttonClick():
+		p = pin.get()
+		usr = username.get()
+		play(p, usr)
+		# 'Checkbutton' is used to create the check buttons
+	button = tkinter.Button(window, text = "Start", fg = "green", command=buttonClick).pack(fill="both", expand=True) # 'columnspan' tells to take the width of 2 columns
+																				 # you can also use 'rowspan' in the similar manner
+	window.mainloop()
+
