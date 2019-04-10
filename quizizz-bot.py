@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 #-------------------------------------------------------------------------#
 def waitForItem(driver, css, timeout=20):
@@ -41,7 +41,6 @@ def find_answers(quizID):
     return answers
 
 def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
-	
 	# enable browser logging
 	d = DesiredCapabilities.CHROME
 	d['loggingPrefs'] = { 'performance':'ALL' }
@@ -55,10 +54,10 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 	waitForItem(driver,'.check-player-input')
 	driver.find_element_by_css_selector('.check-player-input').send_keys(name)
 	driver.find_element_by_css_selector('.proceed-button').click()
-	time.sleep(2)
+	time.sleep(1)
 	
 	#find GameID
-	print("RETRIVING QuizID PLEASE BE PATIENT")
+	print("[Info] Retrieving QuidID")
 	with open('logs.txt', 'a') as f:
 		for entry in driver.get_log('performance'):
 			try:
@@ -70,69 +69,81 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 			if 'recommend?quizId=' in line:
 				s = line.split("recommend?quizId=",1)[1]
 				GameID = s.split('"')[0]
-				print("found:" + GameID)
+				print("found: " + GameID)
+				print("You can visit https://quizizz.com/quiz/" + GameID + " for answer. (You will need a quizizz account)")
 				break
 	os.remove("logs.txt")
 	
 	#Continue play
-	time.sleep(3)
+	waitForItem(driver,'.skip-btn',timeout=20)
+	time.sleep(0.5)
 	driver.find_element_by_css_selector('.skip-btn').click()
-	time.sleep(2)
+	waitForItem(driver,'.game-start-btn',timeout=20)
+	time.sleep(0.5)
 	driver.find_element_by_css_selector('.game-start-btn').click()
-	time.sleep(1)
 	answers = find_answers(GameID)
 	print("[info] answers found")
+	time.sleep(2);
 	while True:
 		try:
-			waitForItem(driver,'.question-text-color',timeout=20)
-		except TimeoutException:
-			driver.quit()
-			break
-		try:
-			time.sleep(7);
-			questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower().replace("&nbsp;"," ")]
-			choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
-			firstAnswer = True
-			for answer in choices:
-				try:
-					if isinstance(questionAnswer, list):
-                        # multiple select
-						if firstAnswer:
-							time.sleep(short_delay)
-							firstAnswer = False
-						if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
-							answer.click()
-							time.sleep(5);
-							break
-					elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
-						answer.click()
-						time.sleep(5);
-						break
-				except NoSuchElementException:
-					# Is an image
-					style = answer.find_element_by_css_selector(".option-image").get_attribute("style").lower()
-					if isinstance(questionAnswer, list):
-                        # multiple select
-						for correctAnswer in questionAnswer:
-							if style in correctAnswer:
-								answer.click()
-								time.sleep(5);
-								break
-					elif questionAnswer in style:
-						answer.click()
-						time.sleep(5);
-						break
-			if isinstance(questionAnswer, list):
-				driver.find_element_by_css_selector(".multiselect-submit-btn").click()
-		except KeyError:
-			print(driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower())
-			for answer in driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option'):
-				print(answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower())
 			try:
-				print(answers[input("Manual search for answer - question >>> ").lower()])
-				input("Click the answer please then hit [enter]")
+				waitForItem(driver,'.question-text-color',timeout=20)
+				waitForItem(driver,'.options-container',timeout=20)
+				time.sleep(1)
+			except TimeoutException:
+				driver.quit()
+				break
+			try:
+				questionAnswer = answers[driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower().replace("&nbsp;"," ")]
+				choices = driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option')
+				firstAnswer = True
+				for answer in choices:
+					try:
+						if isinstance(questionAnswer, list):
+							# multiple select
+							if firstAnswer:
+								time.sleep(short_delay)
+								firstAnswer = False
+							if answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() in questionAnswer:
+								answer.click()
+								time.sleep(4)
+								break
+						elif answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower() == questionAnswer:
+							answer.click()
+							time.sleep(4)
+							break
+					except NoSuchElementException:
+						# Is an image
+						style = answer.find_element_by_css_selector(".option-image").get_attribute("style").lower()
+						if isinstance(questionAnswer, list):
+							# multiple select
+							for correctAnswer in questionAnswer:
+								if style in correctAnswer:
+									answer.click()
+									break
+						elif questionAnswer in style:
+							answer.click()
+							break
+				if isinstance(questionAnswer, list):
+					driver.find_element_by_css_selector(".multiselect-submit-btn").click()
 			except KeyError:
-				input("Manual search failed. Try clicking the correct answer then hit [enter]")
+				print(driver.find_element_by_css_selector('.question-text-color').get_attribute('innerHTML').lower())
+				for answer in driver.find_element_by_css_selector('.options-container').find_elements_by_css_selector('.option'):
+					print(answer.find_element_by_css_selector(".resizeable").get_attribute('innerHTML').lower())
+				try:
+					print(answers[input("Manual search for answer - question >>> ").lower()])
+					input("Click the answer please then hit [enter]")
+				except KeyError:
+					input("Manual search failed. Try clicking the correct answer then hit [enter]")
+		except WebDriverException:
+			try:
+				driver.execute_script("location.reload()")
+				followed_by = driver.execute_script(
+					"return window._sharedData.""entry_data.ProfilePage[0]."
+					"user.followed_by.count")
+			except WebDriverException:
+				print("Ignorable Error! If persists and question is not being answered, answer yourself")
+				time.sleep(1)				
 	driver.quit()
 
 #CMD	
