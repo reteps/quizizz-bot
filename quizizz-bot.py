@@ -150,7 +150,8 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 if __name__ == '__main__':
     USAGE = "quizizz-bot (INFO|PLAY)"
     if len(sys.argv) == 1:
-       print(USAGE) 
+       print("Run from command line. USAGE: " + USAGE)
+	   time.sleep(5)
     elif sys.argv[1] == "INFO":
         answers = find_answers(input("gameID >>> "))
         for key in answers:
