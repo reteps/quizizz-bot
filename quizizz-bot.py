@@ -148,18 +148,18 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 
 #CMD	
 if __name__ == '__main__':
-    USAGE = "quizizz-bot (INFO|PLAY)"
-    if len(sys.argv) == 1:
-       print("Run from command line. USAGE: " + USAGE)
-	   time.sleep(5)
-    elif sys.argv[1] == "INFO":
-        answers = find_answers(input("gameID >>> "))
-        for key in answers:
-            print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
-    elif sys.argv[1] == "PLAY":
-        play(input("PIN >>> "), input("username >>> ")) 
-    else:
-        print(USAGE)
+	USAGE = "quizizz-bot (INFO|PLAY)"
+	if len(sys.argv) == 1:
+		print("Run from command line. USAGE: " + USAGE)
+		time.sleep(5)
+	elif sys.argv[1] == "INFO":
+		answers = find_answers(input("gameID >>> "))
+		for key in answers:
+			print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
+	elif sys.argv[1] == "PLAY":
+		play(input("PIN >>> "), input("username >>> ")) 
+	else:
+		print(USAGE)
 
 #GUI(WIP)
 """if __name__ == "__main__":
