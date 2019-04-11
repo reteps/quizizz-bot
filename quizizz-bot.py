@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, time, json, requests, sys, random, string, tkinter, subprocess, tempfile
+import os, time, json, requests, sys, random, string, subprocess, tempfile
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -9,10 +9,6 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 #-------------------------------------------------------------------------#
 def waitForItem(driver, css, timeout=20):
     WebDriverWait(driver, timeout).until(expected_conditions.visibility_of_element_located((By.CSS_SELECTOR, css)))
-
-def randomword(length):
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))
 
 def find_answers(quizID):
     quizInfo = requests.get(f"https://quizizz.com/quiz/{quizID}/").json()
@@ -40,7 +36,12 @@ def find_answers(quizID):
         answers[questionID.replace("&nbsp;"," ").replace(u'\xa0',u' ').rstrip().lower()] = answer.replace("&nbsp;"," ").rstrip().lower()
     return answers
 
-def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
+def play(gamecode, name, delayenable):
+	delayenable=delayenable.lower()
+	if delayenable[1]=="y":
+		#Then Enable random delays
+	else:
+		#delays set to minimum
 	# enable browser logging
 	d = DesiredCapabilities.CHROME
 	d['loggingPrefs'] = { 'performance':'ALL' }
@@ -142,50 +143,10 @@ def play(gamecode, name, short_delay=1, delay=3, long_delay=5):
 					"return window._sharedData.""entry_data.ProfilePage[0]."
 					"user.followed_by.count")
 			except WebDriverException:
-				print("Ignorable Error! If persists and question is not being answered, answer yourself")
+				print("Ignorable Error! If error persists and question is not being answered, answer yourself")
 				time.sleep(1)				
 	driver.quit()
 
 #CMD	
 if __name__ == '__main__':
-	USAGE = "quizizz-bot (INFO|PLAY)"
-	if len(sys.argv) == 1:
-		print("Run from command line. USAGE: " + USAGE)
-		time.sleep(5)
-	elif sys.argv[1] == "INFO":
-		answers = find_answers(input("gameID >>> "))
-		for key in answers:
-			print("{}\n>>> {}\n{}".format(key, answers[key], "="*20))
-	elif sys.argv[1] == "PLAY":
-		play(input("PIN >>> "), input("username >>> ")) 
-	else:
-		print(USAGE)
-
-#GUI(WIP)
-"""if __name__ == "__main__":
-	window = tkinter.Tk()
-	window.title("Quizizz Bot")
-	window.geometry("400x200")
-	window.resizable(0, 0)
-	
-	pin = tkinter.StringVar()
-	username = tkinter.StringVar()
-	pin.set("")
-	username.set("")
-	
-	# creating 2 text labels and input labels
-
-	tkinter.Label(window, text = "Pin:").pack(fill="both", expand=True) # this is placed in 0 0
-	# 'Entry' is used to display the input-field
-	pinField = tkinter.Entry(window, textvariable=pin).pack(fill="both", expand=True) # this is placed in 0 1
-
-	tkinter.Label(window, text = "Username:").pack(fill="both", expand=True) # this is placed in 1 0
-	usrNameField = tkinter.Entry(window, textvariable=username).pack(fill="both", expand=True) # this is placed in 1 1
-	def buttonClick():
-		p = pin.get()
-		usr = username.get()
-		play(p, usr)
-		# 'Checkbutton' is used to create the check buttons
-	button = tkinter.Button(window, text = "Start", fg = "green", command=buttonClick).pack(fill="both", expand=True) # 'columnspan' tells to take the width of 2 columns
-																				 # you can also use 'rowspan' in the similar manner
-	window.mainloop()"""
+	play(input("Game PIN >>> "), input("Username >>> "), input("Random Delays? y/n >>> "))
