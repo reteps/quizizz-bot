@@ -1,14 +1,13 @@
-# quizizz-bot
+# Quizizz-bot
 
-quizizz bot!
+Quizizz bot!
 
-4/8/19 - It is still buggy. If it doesn't work, try running it again or look at the error
+4/11/19 - It is still buggy. If it doesn't work, try running it again. Much more reliable
 
 Note: 
     -Will not work if u have to sign in (ur welcome to add this)
-    -It is not perfect, watch the terminal to see if it could not find the ans(it will get most of them)
-
-### dependencies
+    -It is not perfect
+### Dependencies
 
 + python3
 + selenium
@@ -16,10 +15,8 @@ Note:
 
 ### Recently Fixed
 
-+ `&nbsp;` bug
-+ modifiable timings
-+ QuizID Obfuscation(it was quick so ur welcome to improve)
-+ Extra Windows
++ QuizID Obfuscation
++ Random Delays
 
 ### Mentions
-Original code from https://github.com/reteps/quizizz-bot. I only added auto get QuizID + GUI!!!
+Original code from https://github.com/reteps/quizizz-bot.
