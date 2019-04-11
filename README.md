@@ -5,11 +5,12 @@ Quizizz bot!
 4/11/19 - It is still buggy. If it doesn't work, try running it again. Much more reliable
 
 Note: 
-    -Will not work if u have to sign in (ur welcome to add this)
-    -It is not perfect
+    -Will not work if you need to sign in (You're welcome to add this.)
+    -It's not perfect
+    
 ### Dependencies
 
-+ python3
++ python3 +
 + selenium
 + chromedriver
 
