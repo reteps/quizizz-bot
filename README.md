@@ -1,16 +1,23 @@
-# quizizz-bot
+# Quizizz-bot
 
-quizizz bot!
+Quizizz bot!
 
-1/4/18 - Quizizz has hashed most game data now using an obfusucated JS file. This is done through the obfuscate and deobfuscate methods. I am working on decryption techniques for these.
+4/11/19 - It is still buggy. If it doesn't work, try running it again. Much more reliable
 
-### dependencies
+Note: 
+    -Will not work if you need to sign in (You're welcome to add this.)
+    -It's not perfect
+    
+### Dependencies
 
-+ python3
++ python3 +
 + selenium
 + chromedriver
 
 ### Recently Fixed
 
-+ `&nbsp;` bug
-+ modifiable timings
++ QuizID Obfuscation
++ Random Delays
+
+### Mentions
+Original code from https://github.com/reteps/quizizz-bot.
