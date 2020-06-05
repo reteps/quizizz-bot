@@ -1,8 +1,13 @@
 # Quizizz-bot
 
+EDIT:
+Here is the 2020 answer script, enjoy!!!
++ https://repl.it/@PeterStenger/PurpleDeafeningMetadata
+
 Quizizz bot!
 
 4/11/19 - It is still buggy. If it doesn't work, try running it again. Much more reliable
+6/5/20 - Just use the answer script tbh
 
 Note: 
     -Will not work if you need to sign in (You're welcome to add this.)
